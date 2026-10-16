@@ -37,11 +37,13 @@ function loadJournal(){try{return JSON.parse(localStorage.getItem(JOURNAL_KEY))|
 function saveJournal(j){try{localStorage.setItem(JOURNAL_KEY,JSON.stringify(j))}catch(e){console.warn("No se pudo guardar el historial local",e)}}
 function processJournal(candle,sig,atrNow,rsiValue){
  const j=loadJournal(),ts=Number(candle.t),close=Number(candle.c),high=Number(candle.h),low=Number(candle.l);
- const isNewCandle=ts>j.lastCandle;
- if(isNewCandle){
-  j.lastCandle=ts;
-  const label=sig==="LONG_CANDIDATE"?"LONG":sig==="SHORT_CANDIDATE"?"SHORT":"SIN SEÑAL";
+ const label=sig==="LONG_CANDIDATE"?"LONG":sig==="SHORT_CANDIDATE"?"SHORT":"SIN SEÑAL";
+ const existingSignal=j.signals.find(s=>Number(s.ts)===ts);
+ if(ts>j.lastCandle) j.lastCandle=ts;
+ if(!existingSignal){
   j.signals.unshift({ts,signal:label,price:close,rsi:rsiValue});j.signals=j.signals.slice(0,200);
+ }else if(existingSignal.signal!==label){
+  existingSignal.signal=label;existingSignal.price=close;existingSignal.rsi=rsiValue;
  }
  const dayKey=new Date(ts).toISOString().slice(0,10);
  const dailyRealized=()=>j.trades.filter(t=>t.status==="CERRADA"&&new Date(t.exitTs).toISOString().slice(0,10)===dayKey).reduce((sum,t)=>sum+Number(t.pnl||0),0);
