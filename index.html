@@ -58,10 +58,11 @@ function processJournal(candle,sig,atrNow,rsiValue){
  saveJournal(j);renderJournal(j,close)
 }
 function renderJournal(j,currentPrice){
+ const money=n=>(n<0?"−":"")+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
  const opened=j.open?[j.open]:[],openRows=$("openTradesRows");
  if(openRows){openRows.innerHTML=opened.length?opened.map(p=>{const price=Number(currentPrice)||Number(p.entry),pnl=Number(p.qty)*(p.side==="LONG"?price-Number(p.entry):Number(p.entry)-price);return '<tr><td style="padding:8px;white-space:nowrap">'+new Date(p.entryTs).toLocaleString("es-MX")+'</td><td style="padding:8px">'+p.side+'</td><td style="padding:8px;text-align:right">'+money(p.entry)+'</td><td style="padding:8px;text-align:right">'+money(price)+'</td><td style="padding:8px;text-align:right" class="'+(pnl>0?"green":pnl<0?"red":"")+'">'+money(pnl)+'</td><td style="padding:8px;text-align:right">'+money(p.stop)+'</td><td style="padding:8px;text-align:right">'+money(p.target)+'</td></tr>'}).join(""):'<tr><td colspan="7" style="padding:8px">No hay operaciones abiertas.</td></tr>'}
 
- const money=n=>(n<0?"−":"")+"$"+Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+
  const closed=j.trades.filter(t=>t.status==="CERRADA"),total=closed.reduce((a,t)=>a+t.pnl,0),wins=closed.filter(t=>t.pnl>0).length,losses=closed.filter(t=>t.pnl<0).length;
  $("tradesCount").textContent=closed.length;$("realizedPnl").textContent=money(total);$("realizedPnl").className="value "+(total>0?"green":total<0?"red":"");
  $("winLoss").textContent=wins+" / "+losses;
