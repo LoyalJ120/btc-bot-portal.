@@ -18,10 +18,12 @@ function loadJournal(){try{return JSON.parse(localStorage.getItem(JOURNAL_KEY))|
 function saveJournal(j){try{localStorage.setItem(JOURNAL_KEY,JSON.stringify(j))}catch(e){console.warn("No se pudo guardar el historial local",e)}}
 function processJournal(candle,sig,atrNow,rsiValue){
  const j=loadJournal(),ts=Number(candle.t),close=Number(candle.c),high=Number(candle.h),low=Number(candle.l);
- if(ts<=j.lastCandle){renderJournal(j,close);return}
- j.lastCandle=ts;
- const label=sig==="LONG_CANDIDATE"?"LONG":sig==="SHORT_CANDIDATE"?"SHORT":"SIN SEÑAL";
- j.signals.unshift({ts,signal:label,price:close,rsi:rsiValue});j.signals=j.signals.slice(0,200);
+ const isNewCandle=ts>j.lastCandle;
+ if(isNewCandle){
+  j.lastCandle=ts;
+  const label=sig==="LONG_CANDIDATE"?"LONG":sig==="SHORT_CANDIDATE"?"SHORT":"SIN SEÑAL";
+  j.signals.unshift({ts,signal:label,price:close,rsi:rsiValue});j.signals=j.signals.slice(0,200);
+ }
  if(j.open){
   const p=j.open,stopHit=p.side==="LONG"?low<=p.stop:high>=p.stop,targetHit=p.side==="LONG"?high>=p.target:low<=p.target;
   let exit=null,reason="";
